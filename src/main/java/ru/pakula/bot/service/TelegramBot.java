@@ -1,7 +1,6 @@
 package ru.pakula.bot.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -18,6 +17,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pakula.bot.config.BotConfig;
+import ru.pakula.bot.model.CategoryRepository;
 import ru.pakula.bot.model.Person;
 import ru.pakula.bot.model.UserRepository;
 
@@ -31,6 +31,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     final BotConfig config;
 
@@ -80,6 +83,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 case "/help":
                     sendMessage(chatId, HELP_TEXT);
+                    break;
+                case "/add_category":
                     break;
                 default:
                     sendMessage(chatId, "Sorry, command was not recognized.");

@@ -17,9 +17,11 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pakula.bot.config.BotConfig;
-import ru.pakula.bot.model.CategoryRepository;
+import ru.pakula.bot.model.Category;
+import ru.pakula.bot.repository.CategoryInMemory;
+import ru.pakula.bot.repository.CategoryRepository;
 import ru.pakula.bot.model.Person;
-import ru.pakula.bot.model.UserRepository;
+import ru.pakula.bot.repository.UserRepository;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -34,6 +36,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    private CategoryInMemory categoryInMemory = new CategoryInMemory();
 
     final BotConfig config;
 
@@ -85,6 +89,9 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessage(chatId, HELP_TEXT);
                     break;
                 case "/add_category":
+                    break;
+                case "/show_categories":
+                    sendMessage(chatId, categoryInMemory.printAllCategories());
                     break;
                 default:
                     sendMessage(chatId, "Sorry, command was not recognized.");

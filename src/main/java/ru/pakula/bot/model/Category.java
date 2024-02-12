@@ -12,6 +12,12 @@ public class Category {
 
     private String description;
 
+    public Category(Long id, String shortName, String description) {
+        this.id = id;
+        this.shortName = shortName;
+        this.description = description;
+    }
+
     public Long getId() {
         return id;
     }
@@ -38,10 +44,6 @@ public class Category {
 
     @Override
     public String toString() {
-        return "Category{" +
-                "id=" + id +
-                ", shortName='" + shortName + '\'' +
-                ", description='" + description + '\'' +
-                '}';
+        return id + ". [" + shortName + "] - " + description;
     }
 }

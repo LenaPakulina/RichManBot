@@ -1,5 +1,7 @@
 package ru.pakula.bot.service;
 
+import io.github.dostonhamrakulov.InlineCalendarBuilder;
+import io.github.dostonhamrakulov.InlineCalendarCommandUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -23,9 +25,13 @@ import ru.pakula.bot.repository.CategoryRepository;
 import ru.pakula.bot.model.Person;
 import ru.pakula.bot.repository.UserRepository;
 
+import java.nio.file.Path;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.github.dostonhamrakulov.LanguageEnum.RU;
 
 @Slf4j
 @Component
@@ -93,6 +99,26 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "/show_categories":
                     sendMessage(chatId, categoryInMemory.printAllCategories());
                     break;
+                case "/showCalendar":
+                    InlineCalendarBuilder inlineCalendarBuilder = new InlineCalendarBuilder(RU);
+                    SendMessage sendMessage = new SendMessage();
+                    sendMessage.setChatId(String.valueOf(chatId));
+                    sendMessage.setText("Datedsafddsf;lskagf////////");
+                    sendMessage.setReplyMarkup(inlineCalendarBuilder.build(update));
+                    executeMessage(sendMessage);
+
+                    if (InlineCalendarCommandUtil.isInlineCalendarClicked(update)){
+                        if (InlineCalendarCommandUtil.isCalendarIgnoreButtonClicked(update)) {
+                            return;
+                        }
+                        if (InlineCalendarCommandUtil.isCalendarNavigationButtonClicked(update)) {
+                            sendMessage.setReplyMarkup(inlineCalendarBuilder.build(update));
+                            executeMessage(sendMessage);
+                            return;
+                        }
+                        LocalDate localDate = InlineCalendarCommandUtil.extractDate(update);
+                    }
+                    break;
                 default:
                     sendMessage(chatId, "Sorry, command was not recognized.");
             }
@@ -100,6 +126,7 @@ public class TelegramBot extends TelegramLongPollingBot {
             String callBackData = update.getCallbackQuery().getData();
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
+            System.out.println(callBackData);
             if (callBackData.equals(YES_BUTTON)) {
                 String text = "You pressed YES button;";
                 executeMessageText(text, chatId, messageId);

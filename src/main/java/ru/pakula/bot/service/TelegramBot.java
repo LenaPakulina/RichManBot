@@ -1,5 +1,6 @@
 package ru.pakula.bot.service;
 
+import com.vdurmont.emoji.EmojiParser;
 import io.github.dostonhamrakulov.InlineCalendarBuilder;
 import io.github.dostonhamrakulov.InlineCalendarCommandUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -179,7 +180,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(long chatId, String name) {
-        String answer = "Hi, " + name + "!";
+        String answer = EmojiParser.parseToUnicode("Hi, " + name + "! :blush:");
         log.info("Replied to user " + name);
         sendMessage(chatId, answer);
     }

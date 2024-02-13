@@ -1,11 +1,15 @@
 package ru.pakula.bot.repository;
 
+import com.vdurmont.emoji.EmojiParser;
 import ru.pakula.bot.model.Category;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class CategoryInMemory {
+    static final String SPARKLES = EmojiParser.parseToUnicode(":sparkles:");
+
+    static final String LINE_BREAK = System.lineSeparator();
 
     List<Category> categoryMemory = new ArrayList<>(20);
 
@@ -21,12 +25,16 @@ public class CategoryInMemory {
 
     public String printAllCategories() {
         StringBuilder answer = new StringBuilder();
+        answer.append(SPARKLES).append(SPARKLES).append(SPARKLES);
         answer.append("Available categories:");
-        answer.append(System.lineSeparator());
+        answer.append(SPARKLES).append(SPARKLES).append(SPARKLES);
+        answer.append(LINE_BREAK).append(LINE_BREAK);
         for (Category category : categoryMemory) {
             answer.append(category.toString());
             answer.append(System.lineSeparator());
         }
         return answer.toString();
     }
+
+
 }

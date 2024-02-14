@@ -1,6 +1,7 @@
 package ru.pakula.bot.repository;
 
 import com.vdurmont.emoji.EmojiParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.pakula.bot.model.Category;
@@ -8,7 +9,11 @@ import ru.pakula.bot.model.Category;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CategoryInMemory {
+public class CategoryStorage {
+
+    @Autowired
+    private CategoryRepository categoryRepository;
+
     static final String SPARKLES = EmojiParser.parseToUnicode(":sparkles:");
 
     static final String LINE_BREAK = System.lineSeparator();
@@ -17,7 +22,7 @@ public class CategoryInMemory {
 
     List<Category> categoryMemory = new ArrayList<>(20);
 
-    public CategoryInMemory() {
+    public CategoryStorage() {
         categoryMemory.add(new Category(1L, "Foodstuff", "Simple purchases of milk, bread. " +
                 "Without household chemicals and without cafes."));
         categoryMemory.add(new Category(2L, "Chemistry", "Household chemicals and cosmetics."));

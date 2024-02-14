@@ -2,6 +2,7 @@ package ru.pakula.bot.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.pakula.bot.model.Person;
 import ru.pakula.bot.repository.UserRepository;
@@ -9,7 +10,9 @@ import ru.pakula.bot.repository.UserRepository;
 import java.sql.Timestamp;
 
 @Slf4j
+@Component
 public class PersonStorage {
+
     @Autowired
     private UserRepository userRepository;
 

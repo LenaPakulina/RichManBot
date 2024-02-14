@@ -2,6 +2,7 @@ package ru.pakula.bot.service;
 
 import com.vdurmont.emoji.EmojiParser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
@@ -26,7 +27,8 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     final BotConfig config;
 
-    private final PersonStorage personStorage = new PersonStorage();
+    @Autowired
+    private PersonStorage personStorage;
 
     private final CategoryStorage categoryStorage = new CategoryStorage();
 
@@ -114,8 +116,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         long messageId = update.getMessage().getMessageId();
 
         if (operations.containsKey(chatId) && operations.get(chatId).hasValidCategory()) {
-            operations.get(chatId).addMessageIdToDelete(messageId);
             try {
+                operations.get(chatId).addMessageIdToDelete(messageId);
                 double value = Integer.parseInt(msgText);
                 operations.get(chatId).setPrice(value);
                 String text = operations.get(chatId).toString();

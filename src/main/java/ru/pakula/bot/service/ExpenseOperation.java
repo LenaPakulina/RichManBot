@@ -27,6 +27,8 @@ public class ExpenseOperation {
 
     private static final String CHOOSE_DAY= "Choose the date of expense:";
 
+    private final List<Long> messageIdsToDelete = new ArrayList<>(20);
+
     public ExpenseOperation(long chatId) {
         this.chatId = chatId;
     }
@@ -85,7 +87,6 @@ public class ExpenseOperation {
             return message;
         }
         localDate = InlineCalendarCommandUtil.extractDate(update);
-        System.out.println("localDate = " + localDate);
         return null;
     }
 
@@ -103,7 +104,6 @@ public class ExpenseOperation {
 
     public EditMessageText afterSelectingCategory(Update update, long messageId, String callBackData) {
         categoryId = Integer.parseInt(callBackData.split(":")[1]);
-        System.out.println(categoryId);
 
         EditMessageText message = new EditMessageText();
         message.setChatId(String.valueOf(chatId));
@@ -120,5 +120,13 @@ public class ExpenseOperation {
                 ", categoryId=" + categoryId +
                 ", price=" + price +
                 '}';
+    }
+
+    public List<Long> getMessageIdsToDeleteList() {
+        return messageIdsToDelete;
+    }
+
+    public void addMessageIdToDelete(Long id) {
+        messageIdsToDelete.add(id);
     }
 }

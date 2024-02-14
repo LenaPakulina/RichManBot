@@ -6,7 +6,9 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.MessageId;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -16,10 +18,7 @@ import ru.pakula.bot.StringConstants;
 import ru.pakula.bot.config.BotConfig;
 import ru.pakula.bot.repository.CategoryStorage;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -79,6 +78,20 @@ public class TelegramBot extends TelegramLongPollingBot {
         executeMessage(message);
     }
 
+    private void sendMessageAndSaveMessageId(long chatId, String textToSend) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(textToSend);
+
+        try {
+            var message1 = execute(message);
+            Long value = Long.valueOf(message1.getMessageId());
+            operations.get(chatId).addMessageIdToDelete(value);
+        } catch (TelegramApiException e) {
+            log.error(StringConstants.LOG_ERROR + e.getMessage());
+        }
+    }
+
     private void executeEditMessageText(EditMessageText message) {
         try {
             execute(message);
@@ -101,17 +114,19 @@ public class TelegramBot extends TelegramLongPollingBot {
         long messageId = update.getMessage().getMessageId();
 
         if (operations.containsKey(chatId) && operations.get(chatId).hasValidCategory()) {
+            operations.get(chatId).addMessageIdToDelete(messageId);
             try {
                 double value = Integer.parseInt(msgText);
                 operations.get(chatId).setPrice(value);
-                sendMessage(chatId, operations.get(chatId).toString());
-                operations.remove(chatId);
+                String text = operations.get(chatId).toString();
+                removeOperation(chatId);
+                sendMessage(chatId, text);
             } catch (NumberFormatException e) {
-                sendMessage(chatId, StringConstants.INCORRECT_PRICE);
+                sendMessageAndSaveMessageId(chatId, StringConstants.INCORRECT_PRICE);
                 log.error(StringConstants.LOG_ERROR + e.getMessage());
             }
         } else {
-            operations.remove(chatId);
+            removeOperation(chatId);
             switch (msgText) {
                 case "/start":
                     personStorage.registerPerson(update.getMessage());
@@ -138,12 +153,12 @@ public class TelegramBot extends TelegramLongPollingBot {
         String callBackData = update.getCallbackQuery().getData();
         long messageId = update.getCallbackQuery().getMessage().getMessageId();
         long chatId = update.getCallbackQuery().getMessage().getChatId();
-        System.out.println(callBackData);
 
         if (operations.containsKey(chatId)) {
             if (categoryStorage.isCategorySelection(callBackData)) {
                 EditMessageText ans = operations.get(chatId).afterSelectingCategory(update, messageId, callBackData);
                 if (ans != null) {
+                    operations.get(chatId).addMessageIdToDelete(messageId);
                     executeEditMessageText(ans);
                 }
             } else if (operations.get(chatId).checkIsInlineCalendarClicked(update)) {
@@ -161,6 +176,21 @@ public class TelegramBot extends TelegramLongPollingBot {
 
                     executeEditMessageText(message);
                 }
+            }
+        }
+    }
+
+    private void removeOperation(long chatId) {
+        if (!operations.containsKey(chatId)) {
+            return;
+        }
+        List<Long> list = operations.get(chatId).getMessageIdsToDeleteList();
+        for (Long messageId : list) {
+            DeleteMessage deleteMessage = new DeleteMessage(String.valueOf(chatId), messageId.intValue());
+            try {
+                execute(deleteMessage);
+            }catch(TelegramApiException tae) {
+                throw new RuntimeException(tae);
             }
         }
     }

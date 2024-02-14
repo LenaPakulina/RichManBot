@@ -51,7 +51,6 @@ public class CategoryStorage {
         for (int i = 0; i < (categoryMemory.size() / 2 + categoryMemory.size() % 2); i++) {
             rowsInLine.add(new ArrayList<>());
         }
-        System.out.println("rowsInLine size = " + rowsInLine.size());
         for (int i = 0; i < categoryMemory.size(); i++) {
             var btn = new InlineKeyboardButton();
             btn.setText(categoryMemory.get(i).getShortName());

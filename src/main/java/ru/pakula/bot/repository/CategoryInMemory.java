@@ -1,6 +1,8 @@
 package ru.pakula.bot.repository;
 
 import com.vdurmont.emoji.EmojiParser;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.pakula.bot.model.Category;
 
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ public class CategoryInMemory {
     static final String SPARKLES = EmojiParser.parseToUnicode(":sparkles:");
 
     static final String LINE_BREAK = System.lineSeparator();
+
+    static final String CATEGORY_ID = "CATEGORY_ID:";
 
     List<Category> categoryMemory = new ArrayList<>(20);
 
@@ -36,5 +40,24 @@ public class CategoryInMemory {
         return answer.toString();
     }
 
+    public InlineKeyboardMarkup createInlineKeyboardMarkup() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rowsInLine = new ArrayList<>();
+        for (int i = 0; i < (categoryMemory.size() / 2 + categoryMemory.size() % 2); i++) {
+            rowsInLine.add(new ArrayList<>());
+        }
+        System.out.println("rowsInLine size = " + rowsInLine.size());
+        for (int i = 0; i < categoryMemory.size(); i++) {
+            var btn = new InlineKeyboardButton();
+            btn.setText(categoryMemory.get(i).getShortName());
+            btn.setCallbackData(CATEGORY_ID + categoryMemory.get(i).getId().toString());
+            rowsInLine.get(i / 2).add(btn);
+        }
+        markup.setKeyboard(rowsInLine);
+        return markup;
+    }
 
+    public boolean isCategorySelection(String message) {
+        return message.startsWith(CATEGORY_ID);
+    }
 }

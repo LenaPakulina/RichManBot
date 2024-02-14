@@ -30,7 +30,9 @@ import java.nio.file.Path;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static io.github.dostonhamrakulov.LanguageEnum.RU;
 
@@ -45,6 +47,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     private CategoryRepository categoryRepository;
 
     private CategoryInMemory categoryInMemory = new CategoryInMemory();
+
+    private Map<Long, ExpenseOperation> operations = new HashMap<>(20);
 
     final BotConfig config;
 
@@ -100,25 +104,10 @@ public class TelegramBot extends TelegramLongPollingBot {
                 case "/show_categories":
                     sendMessage(chatId, categoryInMemory.printAllCategories());
                     break;
-                case "/showCalendar":
-                    InlineCalendarBuilder inlineCalendarBuilder = new InlineCalendarBuilder(RU);
-                    SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(String.valueOf(chatId));
-                    sendMessage.setText("Datedsafddsf;lskagf////////");
-                    sendMessage.setReplyMarkup(inlineCalendarBuilder.build(update));
-                    executeMessage(sendMessage);
-
-                    if (InlineCalendarCommandUtil.isInlineCalendarClicked(update)){
-                        if (InlineCalendarCommandUtil.isCalendarIgnoreButtonClicked(update)) {
-                            return;
-                        }
-                        if (InlineCalendarCommandUtil.isCalendarNavigationButtonClicked(update)) {
-                            sendMessage.setReplyMarkup(inlineCalendarBuilder.build(update));
-                            executeMessage(sendMessage);
-                            return;
-                        }
-                        LocalDate localDate = InlineCalendarCommandUtil.extractDate(update);
-                    }
+                case "/add_expense":
+                    ExpenseOperation operation = new ExpenseOperation(chatId);
+                    operations.put(chatId, operation);
+                    executeMessage(operation.createOperation(update));
                     break;
                 default:
                     sendMessage(chatId, "Sorry, command was not recognized.");
@@ -128,7 +117,41 @@ public class TelegramBot extends TelegramLongPollingBot {
             long messageId = update.getCallbackQuery().getMessage().getMessageId();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
             System.out.println(callBackData);
-            if (callBackData.equals(YES_BUTTON)) {
+
+            if (operations.containsKey(chatId) && categoryInMemory.isCategorySelection(callBackData)) {
+                EditMessageText ans = operations.get(chatId).afterSelectingCategory(update, messageId, callBackData);
+                if (ans != null) {
+                    try {
+                        execute(ans);
+                    } catch (TelegramApiException e) {
+                        log.error("Error #0003: " + e.getMessage());
+                    }
+                }
+            } else if (operations.containsKey(chatId)
+                    && operations.get(chatId).checkIsInlineCalendarClicked(update)) {
+                EditMessageText ans = operations.get(chatId).afterSelectingDate(update, messageId);
+                if (ans != null) {
+                    try {
+                        execute(ans);
+                    } catch (TelegramApiException e) {
+                        log.error("Error #0003: " + e.getMessage());
+                    }
+                } else if (operations.get(chatId).hasValidDate()) {
+                    EditMessageText message = new EditMessageText();
+                    message.setChatId(String.valueOf(chatId));
+                    message.setText("Choose category:");
+                    message.setMessageId((int) messageId);
+
+                    InlineKeyboardMarkup markup = categoryInMemory.createInlineKeyboardMarkup();
+                    message.setReplyMarkup(markup);
+
+                    try {
+                        execute(message);
+                    } catch (TelegramApiException e) {
+                        log.error("Error #0003: " + e.getMessage());
+                    }
+                }
+            } else if (callBackData.equals(YES_BUTTON)) {
                 String text = "You pressed YES button;";
                 executeMessageText(text, chatId, messageId);
             } else if (callBackData.equals(NO_BUTTON)) {

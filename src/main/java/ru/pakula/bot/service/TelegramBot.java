@@ -88,6 +88,23 @@ public class TelegramBot extends TelegramLongPollingBot {
             String msgText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
 
+            if (operations.containsKey(chatId) && operations.get(chatId).hasValidCategory()) {
+                try {
+                    double value = Integer.parseInt(msgText);
+                    operations.get(chatId).setPrice(value);
+                    String text = operations.get(chatId).toString();
+                    operations.remove(chatId);
+                    sendMessage(chatId, text);
+                } catch (NumberFormatException e) {
+                    String text = "An incorrect price has been entered."
+                            + System.lineSeparator() + "Enter the purchase price, RUB:";
+                    sendMessage(chatId, text);
+                    log.error("Error #0003: " + e.getMessage());
+                    System.out.println("error");
+                }
+                return;
+            }
+
             switch (msgText) {
                 case "/start":
                     registerPerson(update.getMessage());

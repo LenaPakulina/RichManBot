@@ -5,9 +5,13 @@ import io.github.dostonhamrakulov.InlineCalendarCommandUtil;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static io.github.dostonhamrakulov.LanguageEnum.RU;
@@ -89,8 +93,32 @@ public class ExpenseOperation {
         return localDate != null;
     }
 
+    public boolean hasValidCategory() {
+        return categoryId != -1;
+    }
+
+    public void setPrice(double value) {
+        this.price = value;
+    }
+
     public EditMessageText afterSelectingCategory(Update update, long messageId, String callBackData) {
-        categoryId = Integer.parseInt(callBackData);
-        return null;
+        categoryId = Integer.parseInt(callBackData.split(":")[1]);
+        System.out.println(categoryId);
+
+        EditMessageText message = new EditMessageText();
+        message.setChatId(String.valueOf(chatId));
+        message.setText("Enter the purchase price, RUB: ");
+        message.setMessageId((int) messageId);
+
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return "ExpenseOperation{" +
+                "localDate=" + localDate +
+                ", categoryId=" + categoryId +
+                ", price=" + price +
+                '}';
     }
 }

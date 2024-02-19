@@ -1,4 +1,4 @@
-package ru.pakula.bot.service;
+package ru.pakula.bot.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

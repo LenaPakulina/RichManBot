@@ -5,6 +5,7 @@ import jakarta.persistence.Id;
 
 @Entity(name = "categories")
 public class Category {
+
     @Id
     private Long id;
 
@@ -16,6 +17,9 @@ public class Category {
         this.id = id;
         this.shortName = shortName;
         this.description = description;
+    }
+
+    public Category() {
     }
 
     public Long getId() {

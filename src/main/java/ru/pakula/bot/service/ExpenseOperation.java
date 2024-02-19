@@ -8,6 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import ru.pakula.bot.model.Expense;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -122,11 +123,22 @@ public class ExpenseOperation {
                 '}';
     }
 
+    public String printInfo() {
+        return "Saved Expense: " +
+                "date=" + localDate +
+                ", categoryId=" + categoryId +
+                ", price=" + price;
+    }
+
     public List<Long> getMessageIdsToDeleteList() {
         return messageIdsToDelete;
     }
 
     public void addMessageIdToDelete(Long id) {
         messageIdsToDelete.add(id);
+    }
+
+    public Expense buildExpense() {
+        return new Expense(categoryId, price, chatId, localDate);
     }
 }

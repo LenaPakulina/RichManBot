@@ -9,7 +9,6 @@ import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
-import org.telegram.telegrambots.meta.api.objects.MessageId;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -18,6 +17,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pakula.bot.StringConstants;
 import ru.pakula.bot.config.BotConfig;
 import ru.pakula.bot.repository.CategoryStorage;
+import ru.pakula.bot.repository.ExpenseRepository;
+import ru.pakula.bot.repository.PersonStorage;
 
 import java.util.*;
 
@@ -25,12 +26,16 @@ import java.util.*;
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
 
+    @Autowired
+    private ExpenseRepository expenseRepository;
+
     final BotConfig config;
 
     @Autowired
     private PersonStorage personStorage;
 
-    private final CategoryStorage categoryStorage = new CategoryStorage();
+    @Autowired
+    private CategoryStorage categoryStorage;
 
     private final Map<Long, ExpenseOperation> operations = new HashMap<>(20);
 
@@ -120,7 +125,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 operations.get(chatId).addMessageIdToDelete(messageId);
                 double value = Integer.parseInt(msgText);
                 operations.get(chatId).setPrice(value);
-                String text = operations.get(chatId).toString();
+                expenseRepository.save(operations.get(chatId).buildExpense());
+                String text = operations.get(chatId).printInfo();
                 removeOperation(chatId);
                 sendMessage(chatId, text);
             } catch (NumberFormatException e) {
@@ -191,9 +197,10 @@ public class TelegramBot extends TelegramLongPollingBot {
             DeleteMessage deleteMessage = new DeleteMessage(String.valueOf(chatId), messageId.intValue());
             try {
                 execute(deleteMessage);
-            }catch(TelegramApiException tae) {
+            } catch (TelegramApiException tae) {
                 throw new RuntimeException(tae);
             }
         }
+        operations.remove(chatId);
     }
 }

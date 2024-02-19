@@ -1,7 +1,10 @@
 package ru.pakula.bot.repository;
 
 import com.vdurmont.emoji.EmojiParser;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.pakula.bot.model.Category;
@@ -9,6 +12,8 @@ import ru.pakula.bot.model.Category;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
+@Component
 public class CategoryStorage {
 
     @Autowired
@@ -22,7 +27,8 @@ public class CategoryStorage {
 
     List<Category> categoryMemory = new ArrayList<>(20);
 
-    public CategoryStorage() {
+    @PostConstruct
+    public void init() {
         categoryMemory.add(new Category(1L, "Foodstuff", "Simple purchases of milk, bread. " +
                 "Without household chemicals and without cafes."));
         categoryMemory.add(new Category(2L, "Chemistry", "Household chemicals and cosmetics."));
@@ -30,6 +36,12 @@ public class CategoryStorage {
         categoryMemory.add(new Category(4L, "Utilities", "Utilities, communications and other mandatory payments."));
         categoryMemory.add(new Category(5L, "Services", "Taxis, hairdressers, beauty salons."));
         categoryMemory.add(new Category(6L, "Car", "The car and everything connected with it."));
+
+        for (Category category : categoryMemory) {
+            if (categoryRepository.findById(category.getId()).isEmpty()) {
+                categoryRepository.save(category);
+            }
+        }
     }
 
     public String printAllCategories() {

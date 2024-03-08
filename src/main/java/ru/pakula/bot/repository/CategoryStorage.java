@@ -10,7 +10,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import ru.pakula.bot.model.Category;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -29,7 +31,7 @@ public class CategoryStorage {
 
     @PostConstruct
     public void init() {
-        categoryMemory.add(new Category(1L, "Продукты", "Простые покупки молока, хлеба." +
+        categoryMemory.add(new Category(1L, "Продукты", "Простые покупки молока, хлеба. " +
                 "Без бытовой химии и без кафе."));
         categoryMemory.add(new Category(2L, "Бытовая химия", "Бытовая химия и косметика."));
         categoryMemory.add(new Category(3L, "Развлечения", "Кафе, развлечения, кино."));
@@ -77,5 +79,11 @@ public class CategoryStorage {
 
     public boolean isCategorySelection(String message) {
         return message.startsWith(CATEGORY_ID);
+    }
+
+    public Set<Integer> getValidCategories() {
+        Set<Integer> validCategories = new HashSet<>();
+        categoryMemory.forEach(category -> validCategories.add(category.getId().intValue()));
+        return validCategories;
     }
 }

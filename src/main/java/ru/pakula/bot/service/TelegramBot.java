@@ -22,6 +22,8 @@ import ru.pakula.bot.repository.PersonStorage;
 
 import java.util.*;
 
+import static ru.pakula.bot.StringConstants.SIMPLE_EXPENSE_INFO;
+
 @Slf4j
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
@@ -121,7 +123,51 @@ public class TelegramBot extends TelegramLongPollingBot {
         long chatId = update.getMessage().getChatId();
         long messageId = update.getMessage().getMessageId();
 
-        if (operations.containsKey(chatId) && operations.get(chatId).hasValidCategory()) {
+        if (!operations.containsKey(chatId)) {
+            switch (msgText) {
+                case "/start":
+                    personStorage.registerPerson(update.getMessage());
+                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                    break;
+                case "/help":
+                    sendMessage(chatId, StringConstants.HELP_TEXT);
+                    break;
+                case "/show_categories":
+                    sendMessage(chatId, categoryStorage.printAllCategories());
+                    break;
+                case "/add_expense":
+                    ExpenseOperation operation = new ExpenseOperation(chatId, false);
+                    operation.addMessageIdToDelete(messageId);
+                    operations.put(chatId, operation);
+                    executeMessage(operation.createOperation(update));
+                    break;
+                case "/add_simple_expense":
+                    ExpenseOperation simple = new ExpenseOperation(chatId, true);
+                    simple.addMessageIdToDelete(messageId);
+                    operations.put(chatId, simple);
+                    sendMessageAndSaveMessageId(chatId, SIMPLE_EXPENSE_INFO
+                            + System.lineSeparator()
+                            + System.lineSeparator()
+                            + categoryStorage.printAllCategories());
+                    break;
+                default:
+                    sendMessage(chatId, "Извините, команда не распознана.");
+            }
+        } else if (operations.get(chatId).isTextExpense()) {
+            operations.get(chatId).addMessageIdToDelete(messageId);
+            List<String> expenseInfo = msgText.lines().toList();
+            System.out.println(expenseInfo.size());
+            try {
+                operations.get(chatId).parseTextExpense(expenseInfo, categoryStorage.getValidCategories());
+                expenseRepository.save(operations.get(chatId).getCurrentExpense());
+                String text = operations.get(chatId).printInfo();
+                removeOperation(chatId);
+                sendMessage(chatId, text);
+            } catch (Exception e) {
+                sendMessage(chatId, e.getMessage());
+                log.error(StringConstants.LOG_ERROR + e.getMessage());
+            }
+        } else if (operations.get(chatId).hasValidCategory()) {
             try {
                 operations.get(chatId).addMessageIdToDelete(messageId);
                 double value = Integer.parseInt(msgText);
@@ -136,32 +182,6 @@ public class TelegramBot extends TelegramLongPollingBot {
             }
         } else {
             removeOperation(chatId);
-            switch (msgText) {
-                case "/start":
-                    personStorage.registerPerson(update.getMessage());
-                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                    break;
-                case "/help":
-                    sendMessage(chatId, StringConstants.HELP_TEXT);
-                    break;
-                case "/show_categories":
-                    sendMessage(chatId, categoryStorage.printAllCategories());
-                    break;
-                case "/add_expense":
-                    ExpenseOperation operation = new ExpenseOperation(chatId);
-                    operation.addMessageIdToDelete(messageId);
-                    operations.put(chatId, operation);
-                    executeMessage(operation.createOperation(update));
-                    break;
-                case "/add_simple_expense":
-                    ExpenseOperation simple = new ExpenseOperation(chatId);
-                    simple.addMessageIdToDelete(messageId);
-                    operations.put(chatId, simple);
-                    sendMessage(chatId, "Извините, команда не распознана.");
-                    break;
-                default:
-                    sendMessage(chatId, "Извините, команда не распознана.");
-            }
         }
     }
 

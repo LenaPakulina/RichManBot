@@ -13,4 +13,9 @@ public class StringConstants {
     public static final String LOG_ERROR = "Произошла ошибка: ";
 
     public static final String CHOOSE_DAY= "Выберите дату совершения траты:";
+
+    public static final String SIMPLE_EXPENSE_INFO = "Введите трату в следующем формате [в скобках указаны примеры ввода]:\n\n" +
+            "1. Номер категории [1]\n" +
+            "2. Введите сумму операции в рублях [222]\n" +
+            "3. Можете оставить комментарий к покупке [Перекресток, щорса].";
 }

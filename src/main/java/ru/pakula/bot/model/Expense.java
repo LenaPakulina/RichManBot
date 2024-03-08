@@ -6,7 +6,6 @@ import jakarta.persistence.Id;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.util.Locale;
 import java.util.Objects;
 
 @Entity(name = "expenses")
@@ -25,10 +24,12 @@ public class Expense {
 
     LocalDate localDate = null;
 
-    String desc;
+    String description;
 
     public Expense() {
-        localDate = LocalDate.now();
+        localDate = null;
+        categoryId = -1;
+        price = -1;
     }
 
     public Expense(int categoryId, double price, long chatId, LocalDate date, String desc) {
@@ -36,7 +37,7 @@ public class Expense {
         this.price = price;
         this.chatId = chatId;
         this.localDate = date;
-        this.desc = desc;
+        this.description = desc;
     }
 
     @Override
@@ -53,11 +54,11 @@ public class Expense {
                 && chatId == expense.chatId
                 && Objects.equals(id, expense.id)
                 && Objects.equals(localDate, expense.localDate)
-                && Objects.equals(desc, expense.desc);
+                && Objects.equals(description, expense.description);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, categoryId, price, chatId, localDate, desc);
+        return Objects.hash(id, categoryId, price, chatId, localDate, description);
     }
 }

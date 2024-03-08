@@ -7,28 +7,46 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import ru.pakula.bot.model.Expense;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static io.github.dostonhamrakulov.LanguageEnum.RU;
 import static ru.pakula.bot.StringConstants.CHOOSE_DAY;
 
 public class ExpenseOperation {
 
+    private boolean isTextExpense = false;
+
     private final Expense currentExpense = new Expense();
 
     private final List<Long> messageIdsToDelete = new ArrayList<>(20);
 
-    public ExpenseOperation(long chatId) {
+    public ExpenseOperation(long chatId, boolean isTextExpense) {
         currentExpense.setChatId(chatId);
+        this.isTextExpense = isTextExpense;
+    }
+
+    public void parseTextExpense(List<String> expenseInfo, Set<Integer> validCategories) throws IllegalArgumentException {
+        if (expenseInfo.size() != 3) {
+            throw new IllegalArgumentException("Указан неверный формат сообщения.");
+        }
+        Integer category = Integer.parseInt(expenseInfo.get(0));
+        double price = Double.parseDouble(expenseInfo.get(1));
+
+        if (!validCategories.contains(category)) {
+            throw new IllegalArgumentException("Указан не найденный id категории.");
+        }
+
+        currentExpense.setCategoryId(category);
+        currentExpense.setPrice(price);
+        currentExpense.setDescription(expenseInfo.get(2));
+        currentExpense.setLocalDate(LocalDate.now());
     }
 
     public SendMessage createOperation(Update update) {
-        currentExpense.setLocalDate(null);
-        currentExpense.setCategoryId(-1);
-        currentExpense.setPrice(-1);
-
         InlineCalendarBuilder inlineCalendarBuilder = new InlineCalendarBuilder(RU);
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(String.valueOf(currentExpense.getChatId()));
@@ -85,11 +103,11 @@ public class ExpenseOperation {
     }
 
     public String printInfo() {
-        return "Сохранена трата: " +
-                "дата = " + currentExpense.getLocalDate() +
-                ",\nкатегория = " + currentExpense.getCategoryId() +
-                ",\nцена = " + currentExpense.getPrice() +
-                ",\nкомментарий = " + currentExpense.getDesc();
+        return "Сохранена трата [id = "+ currentExpense.getId() +"]: " +
+                "\nдата = " + currentExpense.getLocalDate() +
+                ", категория = " + currentExpense.getCategoryId() +
+                ", цена = " + currentExpense.getPrice() +
+                ", комментарий = " + currentExpense.getDescription();
     }
 
     public List<Long> getMessageIdsToDeleteList() {
@@ -102,6 +120,10 @@ public class ExpenseOperation {
 
     public Expense getCurrentExpense() {
         return currentExpense;
+    }
+
+    public boolean isTextExpense() {
+        return isTextExpense;
     }
 
     @Override

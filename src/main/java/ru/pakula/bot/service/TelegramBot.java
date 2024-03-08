@@ -16,10 +16,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pakula.bot.StringConstants;
 import ru.pakula.bot.config.BotConfig;
+import ru.pakula.bot.model.Expense;
 import ru.pakula.bot.repository.CategoryStorage;
 import ru.pakula.bot.repository.ExpenseRepository;
 import ru.pakula.bot.repository.PersonStorage;
 
+import java.time.LocalDate;
 import java.util.*;
 
 import static ru.pakula.bot.StringConstants.SIMPLE_EXPENSE_INFO;
@@ -30,6 +32,9 @@ public class TelegramBot extends TelegramLongPollingBot {
 
     @Autowired
     private ExpenseRepository expenseRepository;
+
+    @Autowired
+    private ExpensesAnalyzer expensesAnalyzer;
 
     final BotConfig config;
 
@@ -170,11 +175,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                     isDeleteOperation = true;
                     sendMessage(chatId, "Введите id траты:");
                     break;
+                case "/show_expenses_for_2_last_months":
+                    sendMessage(chatId, expensesAnalyzer.getInfoForLastMonths());
+                    break;
                 default:
                     sendMessage(chatId, "Извините, команда не распознана.");
             }
         } else if (operations.get(chatId).isTextExpense()) {
-            isDeleteOperation = false;
             operations.get(chatId).addMessageIdToDelete(messageId);
             List<String> expenseInfo = msgText.lines().toList();
             System.out.println(expenseInfo.size());
@@ -189,7 +196,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 log.error(StringConstants.LOG_ERROR + e.getMessage());
             }
         } else if (operations.get(chatId).hasValidCategory()) {
-            isDeleteOperation = false;
             try {
                 operations.get(chatId).addMessageIdToDelete(messageId);
                 double value = Integer.parseInt(msgText);
@@ -203,7 +209,6 @@ public class TelegramBot extends TelegramLongPollingBot {
                 log.error(StringConstants.LOG_ERROR + e.getMessage());
             }
         } else {
-            isDeleteOperation = false;
             removeOperation(chatId);
         }
     }

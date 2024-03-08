@@ -86,4 +86,8 @@ public class CategoryStorage {
         categoryMemory.forEach(category -> validCategories.add(category.getId().intValue()));
         return validCategories;
     }
+
+    public String getCategoryNameById(int id) {
+        return categoryMemory.get(id - 1).getShortName();
+    }
 }

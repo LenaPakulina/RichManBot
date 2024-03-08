@@ -129,8 +129,8 @@ public class TelegramBot extends TelegramLongPollingBot {
         if (isDeleteOperation) {
             try {
                 Long id = Long.valueOf(msgText);
+                isDeleteOperation = false;
                 if (expenseRepository.findById(id).isEmpty()) {
-                    isDeleteOperation = false;
                     throw new IllegalArgumentException("Не удалось удалить трату с id = ");
                 }
                 expenseRepository.deleteById(id);

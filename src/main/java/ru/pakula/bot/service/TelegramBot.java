@@ -126,7 +126,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 operations.get(chatId).addMessageIdToDelete(messageId);
                 double value = Integer.parseInt(msgText);
                 operations.get(chatId).setPrice(value);
-                expenseRepository.save(operations.get(chatId).buildExpense());
+                expenseRepository.save(operations.get(chatId).getCurrentExpense());
                 String text = operations.get(chatId).printInfo();
                 removeOperation(chatId);
                 sendMessage(chatId, text);

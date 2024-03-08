@@ -5,63 +5,33 @@ import io.github.dostonhamrakulov.InlineCalendarCommandUtil;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.pakula.bot.model.Expense;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import static io.github.dostonhamrakulov.LanguageEnum.RU;
+import static ru.pakula.bot.StringConstants.CHOOSE_DAY;
 
 public class ExpenseOperation {
-    LocalDate localDate = null;
 
-    int categoryId;
-
-    double price;
-
-    final long chatId;
-
-    private static final String CHOOSE_DAY= "Выберите дату совершения траты:";
+    private final Expense currentExpense = new Expense();
 
     private final List<Long> messageIdsToDelete = new ArrayList<>(20);
 
     public ExpenseOperation(long chatId) {
-        this.chatId = chatId;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ExpenseOperation that = (ExpenseOperation) o;
-        return categoryId == that.categoryId &&
-                Double.compare(price, that.price) == 0 &&
-                chatId == that.chatId &&
-                Objects.equals(localDate, that.localDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(localDate, categoryId, price, chatId);
+        currentExpense.setChatId(chatId);
     }
 
     public SendMessage createOperation(Update update) {
-        localDate = null;
-        categoryId = -1;
-        price = -1;
+        currentExpense.setLocalDate(null);
+        currentExpense.setCategoryId(-1);
+        currentExpense.setPrice(-1);
 
         InlineCalendarBuilder inlineCalendarBuilder = new InlineCalendarBuilder(RU);
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(String.valueOf(chatId));
+        sendMessage.setChatId(String.valueOf(currentExpense.getChatId()));
         sendMessage.setText(CHOOSE_DAY);
         sendMessage.setReplyMarkup(inlineCalendarBuilder.build(update));
         return sendMessage;
@@ -73,13 +43,13 @@ public class ExpenseOperation {
 
     public EditMessageText afterSelectingDate(Update update, long messageId) {
         if (InlineCalendarCommandUtil.isCalendarIgnoreButtonClicked(update)) {
-            localDate = null;
+            currentExpense.setLocalDate(null);
             return null;
         }
 
         InlineCalendarBuilder inlineCalendarBuilder = new InlineCalendarBuilder(RU);
         EditMessageText message = new EditMessageText();
-        message.setChatId(String.valueOf(chatId));
+        message.setChatId(String.valueOf(currentExpense.getChatId()));
         message.setText(CHOOSE_DAY);
         message.setMessageId((int) messageId);
 
@@ -87,47 +57,39 @@ public class ExpenseOperation {
             message.setReplyMarkup(inlineCalendarBuilder.build(update));
             return message;
         }
-        localDate = InlineCalendarCommandUtil.extractDate(update);
+        currentExpense.setLocalDate(InlineCalendarCommandUtil.extractDate(update));
         return null;
     }
 
-    public boolean hasValidDate() {
-        return localDate != null;
-    }
-
-    public boolean hasValidCategory() {
-        return categoryId != -1;
-    }
-
-    public void setPrice(double value) {
-        this.price = value;
-    }
-
     public EditMessageText afterSelectingCategory(Update update, long messageId, String callBackData) {
-        categoryId = Integer.parseInt(callBackData.split(":")[1]);
+        currentExpense.setCategoryId(Integer.parseInt(callBackData.split(":")[1]));
 
         EditMessageText message = new EditMessageText();
-        message.setChatId(String.valueOf(chatId));
+        message.setChatId(String.valueOf(currentExpense.getChatId()));
         message.setText("Введите цену в рублях: ");
         message.setMessageId((int) messageId);
 
         return message;
     }
 
-    @Override
-    public String toString() {
-        return "ExpenseOperation{" +
-                "localDate=" + localDate +
-                ", categoryId=" + categoryId +
-                ", price=" + price +
-                '}';
+    public boolean hasValidDate() {
+        return currentExpense.getLocalDate() != null;
+    }
+
+    public boolean hasValidCategory() {
+        return currentExpense.getCategoryId() != -1;
+    }
+
+    public void setPrice(double value) {
+        currentExpense.setPrice(value);
     }
 
     public String printInfo() {
-        return "Saved Expense: " +
-                "date=" + localDate +
-                ", categoryId=" + categoryId +
-                ", price=" + price;
+        return "Сохранена трата: " +
+                "дата = " + currentExpense.getLocalDate() +
+                ",\nкатегория = " + currentExpense.getCategoryId() +
+                ",\nцена = " + currentExpense.getPrice() +
+                ",\nкомментарий = " + currentExpense.getDesc();
     }
 
     public List<Long> getMessageIdsToDeleteList() {
@@ -138,7 +100,24 @@ public class ExpenseOperation {
         messageIdsToDelete.add(id);
     }
 
-    public Expense buildExpense() {
-        return new Expense(categoryId, price, chatId, localDate);
+    public Expense getCurrentExpense() {
+        return currentExpense;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ExpenseOperation that = (ExpenseOperation) o;
+        return currentExpense.equals(that.currentExpense);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(currentExpense);
     }
 }

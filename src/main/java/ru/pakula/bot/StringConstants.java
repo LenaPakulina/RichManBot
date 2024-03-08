@@ -11,4 +11,6 @@ public class StringConstants {
             + System.lineSeparator() + "Введите цену в рублях:";
 
     public static final String LOG_ERROR = "Произошла ошибка: ";
+
+    public static final String CHOOSE_DAY= "Выберите дату совершения траты:";
 }

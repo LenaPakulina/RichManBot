@@ -42,10 +42,11 @@ public class TelegramBot extends TelegramLongPollingBot {
     public TelegramBot(BotConfig config) {
         this.config = config;
         List<BotCommand> listOfCommands = new ArrayList<>();
-        listOfCommands.add(new BotCommand("/start", "get a welcome message"));
-        listOfCommands.add(new BotCommand("/show_categories", "show all available expense categories"));
-        listOfCommands.add(new BotCommand("/add_expense", "add expense for statistic"));
-        listOfCommands.add(new BotCommand("/help", "get info about bot"));
+        listOfCommands.add(new BotCommand("/start", "приветственное сообщение"));
+        listOfCommands.add(new BotCommand("/show_categories", "показать все категории трат"));
+        listOfCommands.add(new BotCommand("/add_expense", "добавить трату для анализа"));
+        listOfCommands.add(new BotCommand("/add_simple_expense", "добавить трату в текстовом формате"));
+        listOfCommands.add(new BotCommand("/help", "помощь"));
         try {
             execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
@@ -73,7 +74,7 @@ public class TelegramBot extends TelegramLongPollingBot {
     }
 
     private void startCommandReceived(long chatId, String name) {
-        String answer = EmojiParser.parseToUnicode("Hi, " + name + "! :blush:");
+        String answer = EmojiParser.parseToUnicode("Привет, " + name + "! :blush:");
         log.info("Replied to user " + name);
         sendMessage(chatId, answer);
     }
@@ -148,11 +149,18 @@ public class TelegramBot extends TelegramLongPollingBot {
                     break;
                 case "/add_expense":
                     ExpenseOperation operation = new ExpenseOperation(chatId);
+                    operation.addMessageIdToDelete(messageId);
                     operations.put(chatId, operation);
                     executeMessage(operation.createOperation(update));
                     break;
+                case "/add_simple_expense":
+                    ExpenseOperation simple = new ExpenseOperation(chatId);
+                    simple.addMessageIdToDelete(messageId);
+                    operations.put(chatId, simple);
+                    sendMessage(chatId, "Извините, команда не распознана.");
+                    break;
                 default:
-                    sendMessage(chatId, "Sorry, command was not recognized.");
+                    sendMessage(chatId, "Извините, команда не распознана.");
             }
         }
     }
@@ -176,7 +184,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 } else if (operations.get(chatId).hasValidDate()) {
                     EditMessageText message = new EditMessageText();
                     message.setChatId(String.valueOf(chatId));
-                    message.setText("Choose category:");
+                    message.setText("Выберите категорию:");
                     message.setMessageId((int) messageId);
 
                     InlineKeyboardMarkup markup = categoryStorage.createInlineKeyboardMarkup();

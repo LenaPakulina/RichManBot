@@ -26,7 +26,7 @@ public class ExpenseOperation {
 
     final long chatId;
 
-    private static final String CHOOSE_DAY= "Choose the date of expense:";
+    private static final String CHOOSE_DAY= "Выберите дату совершения траты:";
 
     private final List<Long> messageIdsToDelete = new ArrayList<>(20);
 
@@ -108,7 +108,7 @@ public class ExpenseOperation {
 
         EditMessageText message = new EditMessageText();
         message.setChatId(String.valueOf(chatId));
-        message.setText("Enter the purchase price, RUB: ");
+        message.setText("Введите цену в рублях: ");
         message.setMessageId((int) messageId);
 
         return message;

@@ -39,6 +39,8 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Autowired
     private CategoryStorage categoryStorage;
 
+    private boolean isDeleteOperation = false;
+
     private final Map<Long, ExpenseOperation> operations = new HashMap<>(20);
 
     public TelegramBot(BotConfig config) {
@@ -49,6 +51,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         listOfCommands.add(new BotCommand("/add_expense", "добавить трату для анализа"));
         listOfCommands.add(new BotCommand("/add_simple_expense", "добавить трату в текстовом формате"));
         listOfCommands.add(new BotCommand("/help", "помощь"));
+        listOfCommands.add(new BotCommand("/delete_expense_by_id", "удалить из архива трату"));
         try {
             execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {
@@ -123,7 +126,20 @@ public class TelegramBot extends TelegramLongPollingBot {
         long chatId = update.getMessage().getChatId();
         long messageId = update.getMessage().getMessageId();
 
-        if (!operations.containsKey(chatId)) {
+        if (isDeleteOperation) {
+            try {
+                Long id = Long.valueOf(msgText);
+                if (expenseRepository.findById(id).isEmpty()) {
+                    isDeleteOperation = false;
+                    throw new IllegalArgumentException("Не удалось удалить трату с id = ");
+                }
+                expenseRepository.deleteById(id);
+                sendMessage(chatId, "Трата с id = " + id + " удалена.");
+            } catch (Exception e) {
+                sendMessage(chatId, e.getMessage());
+                log.error(StringConstants.LOG_ERROR + e.getMessage());
+            }
+        } else if (!operations.containsKey(chatId)) {
             switch (msgText) {
                 case "/start":
                     personStorage.registerPerson(update.getMessage());
@@ -150,10 +166,15 @@ public class TelegramBot extends TelegramLongPollingBot {
                             + System.lineSeparator()
                             + categoryStorage.printAllCategories());
                     break;
+                case "/delete_expense_by_id":
+                    isDeleteOperation = true;
+                    sendMessage(chatId, "Введите id траты:");
+                    break;
                 default:
                     sendMessage(chatId, "Извините, команда не распознана.");
             }
         } else if (operations.get(chatId).isTextExpense()) {
+            isDeleteOperation = false;
             operations.get(chatId).addMessageIdToDelete(messageId);
             List<String> expenseInfo = msgText.lines().toList();
             System.out.println(expenseInfo.size());
@@ -168,6 +189,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                 log.error(StringConstants.LOG_ERROR + e.getMessage());
             }
         } else if (operations.get(chatId).hasValidCategory()) {
+            isDeleteOperation = false;
             try {
                 operations.get(chatId).addMessageIdToDelete(messageId);
                 double value = Integer.parseInt(msgText);
@@ -181,11 +203,13 @@ public class TelegramBot extends TelegramLongPollingBot {
                 log.error(StringConstants.LOG_ERROR + e.getMessage());
             }
         } else {
+            isDeleteOperation = false;
             removeOperation(chatId);
         }
     }
 
     private void handlingCallbackQuery(Update update) {
+        isDeleteOperation = false;
         String callBackData = update.getCallbackQuery().getData();
         long messageId = update.getCallbackQuery().getMessage().getMessageId();
         long chatId = update.getCallbackQuery().getMessage().getChatId();

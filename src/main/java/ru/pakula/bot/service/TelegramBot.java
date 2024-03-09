@@ -200,7 +200,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         } else if (operations.get(chatId).hasValidCategory()) {
             try {
                 operations.get(chatId).addMessageIdToDelete(messageId);
-                double value = Integer.parseInt(msgText);
+                double value = Double.parseDouble(msgText);
                 operations.get(chatId).setPrice(value);
                 expenseRepository.save(operations.get(chatId).getCurrentExpense());
                 String text = operations.get(chatId).printInfo();

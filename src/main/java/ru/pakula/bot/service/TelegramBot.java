@@ -52,11 +52,13 @@ public class TelegramBot extends TelegramLongPollingBot {
         this.config = config;
         List<BotCommand> listOfCommands = new ArrayList<>();
         listOfCommands.add(new BotCommand("/start", "приветственное сообщение"));
-        listOfCommands.add(new BotCommand("/show_categories", "показать все категории трат"));
         listOfCommands.add(new BotCommand("/add_expense", "добавить трату для анализа"));
         listOfCommands.add(new BotCommand("/add_simple_expense", "добавить трату в текстовом формате"));
-        listOfCommands.add(new BotCommand("/help", "помощь"));
+        listOfCommands.add(new BotCommand("/show_expenses_for_2_last_months",
+                "получить статистику расходов за 2 последних месяца"));
         listOfCommands.add(new BotCommand("/delete_expense_by_id", "удалить из архива трату"));
+        listOfCommands.add(new BotCommand("/show_categories", "показать все категории трат"));
+        listOfCommands.add(new BotCommand("/help", "помощь"));
         try {
             execute(new SetMyCommands(listOfCommands, new BotCommandScopeDefault(), null));
         } catch (TelegramApiException e) {

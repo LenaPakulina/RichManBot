@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.pakula.bot.StringConstants.EMOJI_CONSTRUCTOR;
+
 @Component
 public class ExpensesAnalyzer {
 
@@ -36,7 +38,15 @@ public class ExpensesAnalyzer {
 
     private String calculateInfoForMonth(LocalDate startDate, LocalDate finishDate) {
         StringBuilder info = new StringBuilder();
-        info.append(String.format("Траты с %s по %s:\n\n", startDate.toString(), finishDate.toString()));
+        info.append(EMOJI_CONSTRUCTOR);
+        info.append(EMOJI_CONSTRUCTOR);
+        info.append(EMOJI_CONSTRUCTOR);
+        info.append(String.format("Траты с %s по %s:", startDate.toString(), finishDate.toString()));
+        info.append(EMOJI_CONSTRUCTOR);
+        info.append(EMOJI_CONSTRUCTOR);
+        info.append(EMOJI_CONSTRUCTOR);
+        info.append(System.lineSeparator());
+        info.append(System.lineSeparator());
         List<Expense> result = expenseRepository.findByLocalDateGreaterThanAndLocalDateLessThanEqual(startDate, finishDate);
         Map<Integer, Double> statistic = new HashMap<>();
         double allPrice = 0;

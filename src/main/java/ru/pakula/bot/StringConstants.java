@@ -1,5 +1,7 @@
 package ru.pakula.bot;
 
+import com.vdurmont.emoji.EmojiParser;
+
 public class StringConstants {
     public static final String HELP_TEXT = "Этот бот сохраняет записи о расходах и анализирует их.\n\n" +
             "Вы можете выбрать команды из главного меню или ввести их вручную:\n\n" +
@@ -18,4 +20,6 @@ public class StringConstants {
             "1. Номер категории [1]\n" +
             "2. Введите сумму операции в рублях [222]\n" +
             "3. Можете оставить комментарий к покупке [Перекресток, щорса].";
+
+    public static final String EMOJI_CONSTRUCTOR = EmojiParser.parseToUnicode(":construction:");
 }

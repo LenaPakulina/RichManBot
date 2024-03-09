@@ -186,7 +186,6 @@ public class TelegramBot extends TelegramLongPollingBot {
         } else if (operations.get(chatId).isTextExpense()) {
             operations.get(chatId).addMessageIdToDelete(messageId);
             List<String> expenseInfo = msgText.lines().toList();
-            System.out.println(expenseInfo.size());
             try {
                 operations.get(chatId).parseTextExpense(expenseInfo, categoryStorage.getValidCategories());
                 expenseRepository.save(operations.get(chatId).getCurrentExpense());
@@ -197,15 +196,19 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendMessage(chatId, e.getMessage());
                 log.error(StringConstants.LOG_ERROR + e.getMessage());
             }
+        } else if (operations.get(chatId).hasValidPrice()) {
+            operations.get(chatId).addMessageIdToDelete(messageId);
+            operations.get(chatId).setDescription(msgText);
+            expenseRepository.save(operations.get(chatId).getCurrentExpense());
+            String text = operations.get(chatId).printInfo();
+            removeOperation(chatId);
+            sendMessage(chatId, text);
         } else if (operations.get(chatId).hasValidCategory()) {
             try {
                 operations.get(chatId).addMessageIdToDelete(messageId);
                 double value = Double.parseDouble(msgText);
                 operations.get(chatId).setPrice(value);
-                expenseRepository.save(operations.get(chatId).getCurrentExpense());
-                String text = operations.get(chatId).printInfo();
-                removeOperation(chatId);
-                sendMessage(chatId, text);
+                sendMessageAndSaveMessageId(chatId, "Добавьте комментарий к трате:");
             } catch (NumberFormatException e) {
                 sendMessageAndSaveMessageId(chatId, StringConstants.INCORRECT_PRICE);
                 log.error(StringConstants.LOG_ERROR + e.getMessage());

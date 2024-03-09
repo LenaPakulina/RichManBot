@@ -98,8 +98,16 @@ public class ExpenseOperation {
         return currentExpense.getCategoryId() != -1;
     }
 
+    public boolean hasValidPrice() {
+        return currentExpense.getPrice() >= 0;
+    }
+
     public void setPrice(double value) {
         currentExpense.setPrice(value);
+    }
+
+    public void setDescription(String text) {
+        currentExpense.setDescription(text);
     }
 
     public String printInfo() {

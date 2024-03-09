@@ -146,7 +146,8 @@ public class TelegramBot extends TelegramLongPollingBot {
                 sendMessage(chatId, e.getMessage());
                 log.error(StringConstants.LOG_ERROR + e.getMessage());
             }
-        } else if (!operations.containsKey(chatId)) {
+        } else if (msgText.startsWith("/") || !operations.containsKey(chatId)) {
+            removeOperation(chatId);
             switch (msgText) {
                 case "/start":
                     personStorage.registerPerson(update.getMessage());

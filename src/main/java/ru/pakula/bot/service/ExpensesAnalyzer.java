@@ -22,21 +22,21 @@ public class ExpensesAnalyzer {
     @Autowired
     private CategoryStorage categoryStorage;
 
-    public String getInfoForLastMonths() {
+    public String getInfoForLastMonths(Long chatId) {
         StringBuilder info = new StringBuilder();
         LocalDate startDate = LocalDate.now();
         startDate = startDate.minusMonths(1);
         startDate = startDate.minusDays(startDate.getDayOfMonth());
         LocalDate finishDate = LocalDate.now();
         finishDate = finishDate.minusDays(finishDate.getDayOfMonth());
-        info.append(calculateInfoForMonth(startDate, finishDate));
+        info.append(calculateInfoForMonth(chatId, startDate, finishDate));
         info.append(System.lineSeparator());
         info.append(System.lineSeparator());
-        info.append(calculateInfoForMonth(finishDate, LocalDate.now()));
+        info.append(calculateInfoForMonth(chatId, finishDate, LocalDate.now()));
         return info.toString();
     }
 
-    private String calculateInfoForMonth(LocalDate startDate, LocalDate finishDate) {
+    private String calculateInfoForMonth(Long chatId, LocalDate startDate, LocalDate finishDate) {
         StringBuilder info = new StringBuilder();
         info.append(EMOJI_CONSTRUCTOR);
         info.append(EMOJI_CONSTRUCTOR);
@@ -47,7 +47,7 @@ public class ExpensesAnalyzer {
         info.append(EMOJI_CONSTRUCTOR);
         info.append(System.lineSeparator());
         info.append(System.lineSeparator());
-        List<Expense> result = expenseRepository.findByLocalDateGreaterThanAndLocalDateLessThanEqual(startDate, finishDate);
+        List<Expense> result = expenseRepository.findByChatIdAndLocalDateGreaterThanAndLocalDateLessThanEqual(chatId, startDate, finishDate);
         Map<Integer, Double> statistic = new HashMap<>();
         double allPrice = 0;
         for (Expense expense : result) {

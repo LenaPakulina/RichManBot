@@ -179,7 +179,7 @@ public class TelegramBot extends TelegramLongPollingBot {
                     sendMessage(chatId, "Введите id траты:");
                     break;
                 case "/show_expenses_for_2_last_months":
-                    sendMessage(chatId, expensesAnalyzer.getInfoForLastMonths());
+                    sendMessage(chatId, expensesAnalyzer.getInfoForLastMonths(chatId));
                     break;
                 default:
                     sendMessage(chatId, "Извините, команда не распознана.");

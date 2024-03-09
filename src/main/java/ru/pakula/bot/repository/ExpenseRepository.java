@@ -10,5 +10,5 @@ import java.util.List;
 
 @Repository
 public interface ExpenseRepository extends CrudRepository<Expense, Long> {
-    List<Expense> findByLocalDateGreaterThanAndLocalDateLessThanEqual(LocalDate from, LocalDate to);
+    List<Expense> findByChatIdAndLocalDateGreaterThanAndLocalDateLessThanEqual(Long chatId, LocalDate from, LocalDate to);
 }

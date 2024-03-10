@@ -9,7 +9,7 @@ public class StringConstants {
             "Введи /show_categories для отображения всех доступных категорий трат;\n\n" +
             "Введи /add_expense для сохранения записи о расходах;\n\n" +
             "Введи /add_simple_expense для сохранения записи о расходах в текстовой форме;\n\n" +
-            "Введи /add_simple_expense для сохранения записи о расходах в текстовой форме;\n\n" +
+            "Введи /delete_expense_by_id для возможного удаления 10 последних расходов;\n\n" +
             "Введи /show_expenses_for_2_last_months для получения статистики по категориям расходов за 2 последних месяца.\n\n";
 
     public static final String INCORRECT_PRICE = "Была введена некорректная цена ."
@@ -22,7 +22,7 @@ public class StringConstants {
     public static final String SIMPLE_EXPENSE_INFO = "Введите трату в следующем формате [в скобках указаны примеры ввода]:\n\n" +
             "1. Номер категории [1]\n" +
             "2. Введите сумму операции в рублях [222]\n" +
-            "3. Можете оставить комментарий к покупке [Перекресток, щорса].";
+            "3. Можете оставить комментарий к покупке [Перекресток].";
 
     public static final String EMOJI_CONSTRUCTOR = EmojiParser.parseToUnicode(":construction:");
 }

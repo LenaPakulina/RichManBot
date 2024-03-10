@@ -5,9 +5,13 @@
 ## Используемые инструменты и технологии
 
 Java 17
+
 Spring
+
 Spring Data JPA
+
 PostgreSQL
+
 Telegram Bot API
 
 Настройки приложения указаны в файле "application.properties". 
